@@ -272,7 +272,7 @@ public function handle()
     $this
         ->to('60169344497')
         ->signature('[COMPANY NAME]') // International country require signature 
-        ->template_id('2878080') // template ID defined in yunpian account
+        ->template_id('3333333') // template ID defined in yunpian account
         ->template_value(['code' => rand(1000, 5000)]) // template value in yunpian account
         ->message('Thanks for register our application.'); // For "yunpian", 
 }
