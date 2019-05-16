@@ -131,6 +131,7 @@ class RegisterController extends Controller
 {
     public function register()
     {
+        // do register operation
         Sms::send(new SmsUserAfterRegister());
     }
 }
@@ -145,4 +146,120 @@ To enable switching, pass in `boolean` value as following:
 ```php
 Sms::send(new SmsUserAfterRegister(), true); // default to false
 ```
+
+## Events
+
+In case you're comfortable playing with event listener, you may listen to event published by this service out of the box for you. Register following events before used under `app/Providers/EventServiceProvider.php` and paste following event:
+
+```php
+namespace App\Providers;
+
+use App\Services\Sms\Events\SmsFailed as SmsFailedEvent;
+use App\Services\Sms\Events\SmsSent as SmsSentEvent;
+
+protected $listen = [
+    ......
+    ......
+    SmsSentEvent::class => [
+        // you should create sent event listener by yourself
+    ],
+    SmsFailedEvent::class => [
+        // you should create failed event listener by yourself
+    ]
+];
+```
+
+`App\Services\Sms\Events\SmsSent.php` event provided 3 parameters object to play with:
+
+- `$sms` : Holding recipient information as well as message being sent
+- `$response` : Guzzle HTTP client's response
+- `$HTTPResponseBody` : Provider's HTTP response
+
+`App\Services\Sms\Events\SmsFailed.php` event provided 3 parameters object to play with:
+
+- `$sms` : Holding recipient information as well as message being sent
+- `$e` : Exception object of Guzzle Client exception
+- `$HTTPResponseBody` : Provider's HTTP response
+
+
+### Sent event listener
+
+Example of sent event listener:
+
+```php
+<?php
+
+namespace App\Listeners\Sms;
+
+use App\Services\Sms\Events\SmsSent as SmsSentEvent;
+
+class SmsSent
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * Notes:
+     *  $event->sms = to get details information of recipient number, from and message
+     *  $event->response = to get details information of successful response
+     *  $event->HTTPResponseBody = HTTPResponse body returned by the external provider
+     *
+     * @param SmsSentEvent $event
+     */
+    public function handle(SmsSentEvent $event)
+    {
+        // dd($event);
+    }
+}
+```
+
+### Failed event listener
+Example of failed event listener:
+
+```php
+<?php
+
+namespace App\Listeners\Sms;
+
+use App\Services\Sms\Events\SmsFailed as SmsFailedEvent;
+
+class SmsFailed
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * Notes:
+     *  $event->sms = to get details information of recipient number, from and message
+     *  $event->exception = to get details information of error status code, message, etc
+     *  $event->HTTPResponseBody = to get details information of error sent by external provider
+     *
+     * @param SmsFailedEvent $event
+     */
+    public function handle(SmsFailedEvent $event)
+    {
+         // dd($event);
+    }
+}
+```
+
+Read laravel events and listeners on how to use that in more details [here](https://laravel.com/docs/5.8/events).
 
