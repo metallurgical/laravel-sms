@@ -26,4 +26,13 @@ interface SmsContract
      * @return mixed
      */
     public function error($exception, $HTTPResponseBody);
+
+    /**
+     * Returned HTTP response body along with response.
+     *
+     * @param $response
+     * @param $HTTPResponseBody
+     * @return mixed
+     */
+    public function success($response, $HTTPResponseBody);
 }

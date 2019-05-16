@@ -114,7 +114,7 @@ class SmsUserAfterRegister implements SmsContract
 }
 ```
 
-This service has its own default driver, in our case is `nexmo`. To use different driver other than `nexmo`, you can override it by adding class member `public $driver = 'twillio';`. Available drivers as for now are **nexmo, twilio and yunpian**. More drivers are coming in future.
+This service has its own default driver, in our case is `nexmo`. To use different driver other than `nexmo`, you can override it by adding class member `public $driver = 'twilio';`. Available drivers as for now are **nexmo, twilio and yunpian**. More drivers are coming in future.
 
 Every successful and erroneous of sending sms, you'll be notified. To catch these information, override both `public function error($exception, $HTTPResponseBody)` and `public function success($response, $HTTPResponseBody)`.
 
