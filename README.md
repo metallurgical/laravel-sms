@@ -40,7 +40,7 @@ On the same file, add class alias under `aliases` array :
 ]    
 ```
 
-Since all the sms providers have their own credentials, this service store those information inside 'config/services.php', copy snippet below and paste into your config service file:
+Since all the sms providers have their own credentials, this service store those information inside `config/services.php`, copy snippet below and paste into your config service file:
 
 ```
 'nexmo' => [
@@ -113,3 +113,36 @@ class SmsUserAfterRegister implements SmsContract
     }
 }
 ```
+
+This service has its own default driver, in our case is `nexmo`. To use different driver other than `nexmo`, you can override it by adding class member `public $driver = 'twillio';`. Available drivers as for now are **nexmo, twilio and yunpian**. More drivers are coming in future.
+
+Every successful and erroneous of sending sms, you'll be notified. To catch these information, override both `public function error($exception, $HTTPResponseBody)` and `public function success($response, $HTTPResponseBody)`.
+
+Somewhere in your controller, sending SMS is easy as following:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Sms;
+
+class RegisterController extends Controller
+{
+    public function register()
+    {
+        Sms::send(new SmsUserAfterRegister());
+    }
+}
+```
+
+## Uniqueness
+
+This service has its own advantage over existing implementation. The purpose of this creation is because to handle user experience in more convenient way by enabling `shouldSwitch` driver in case one is failing. Service will try to re-send an sms to user if 1st attempt was not successful by using different drivers(switching) until all of the drivers are tested. Sounds great, right? 
+
+To enable switching, pass in `boolean` value as following:
+
+```php
+Sms::send(new SmsUserAfterRegister(), true); // default to false
+```
+
