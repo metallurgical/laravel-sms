@@ -29,6 +29,20 @@ trait HasSms
     public $message = '';
 
     /**
+     * Store template ID. **yunpian** provider only.
+     *
+     * @var string
+     */
+    public $template_id = '';
+
+    /**
+     * Key value array matched with template ID. **yunpian** provider only
+     *
+     * @var string
+     */
+    public $template_value = '';
+
+    /**
      * Message's signature as required by MCMC(Malaysia)
      *
      * @var string
@@ -133,6 +147,55 @@ trait HasSms
     }
 
     /**
+     * Set message's template ID that need to be used to replace message.
+     *
+     * @param string $templateId
+     * @return $this
+     */
+    public function template_id(string $templateId)
+    {
+        if (empty($templateId)) {
+            throw new InvalidArgumentException('Template ID is required.');
+        }
+
+        $this->template_id = $templateId;
+
+        return $this;
+    }
+
+    /**
+     * Set message's template value that need to be used to inside template.
+     *
+     * @param string $templateId
+     * @return $this
+     */
+    public function template_value(array $templateValues)
+    {
+        if (empty($templateValues)) {
+            throw new InvalidArgumentException('Template value is required.');
+        }
+
+        $str = '';
+
+        foreach ($templateValues as $key => $templateValue) {
+            if (substr($key, 0, 1) !== '#') {
+                $key = '#' . $key;
+            }
+            if (substr($key, -1, 1) !== '#') {
+                $key = $key . '#';
+            }
+            if ($templateValue == '') {
+                $templateValue = sprintf("%s%s", "\"", "\"");
+            }
+            $str .= sprintf('%s=%s&', $key, $templateValue);
+        }
+
+        $this->template_value = substr($str, 0, -1);
+
+        return $this;
+    }
+
+    /**
      * Call the implemented handle method.
      *
      * @param SmsContract $implementedClass
@@ -146,7 +209,14 @@ trait HasSms
             $implementedClass->message = sprintf('%s %s', $implementedClass->signature, $implementedClass->message);
         }
 
-        $this->instance->setFormData($implementedClass->to, $implementedClass->message);
+        $additionalFormData = [];
+
+        if ($implementedClass->template_id !== '' && $implementedClass->template_value !== '') {
+            $additionalFormData['tpl_id'] = $implementedClass->template_id;
+            $additionalFormData['tpl_value'] = $implementedClass->template_value;
+        }
+
+        $this->instance->setFormData($implementedClass->to, $implementedClass->message, $additionalFormData);
 
         $this->instance->commit($implementedClass, $this->instance);
 

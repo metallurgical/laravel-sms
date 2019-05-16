@@ -263,3 +263,20 @@ class SmsFailed
 
 Read laravel events and listeners on how to use that in more details [here](https://laravel.com/docs/5.8/events).
 
+## Notes on Yunpian provider
+This provider require sending along `tpl_id` and `tpl_value` to be used for international messaging. Fortunately, this service provide api to interact with those params. Call following method inside implemented class:
+
+```php
+public function handle()
+{
+    $this
+        ->to('60169344497')
+        ->signature('[COMPANY NAME]') // International country require signature 
+        ->template_id('2878080') // template ID defined in yunpian account
+        ->template_value(['code' => rand(1000, 5000)]) // template value in yunpian account
+        ->message('Thanks for register our application.'); // For "yunpian", 
+}
+```
+
+`message()` and `signature()` options does not require for **yunpian** provider, but did require for others provider to works
+

@@ -19,7 +19,7 @@ class YunpianProvider extends Sms implements DriverContract
      *
      * @var string
      */
-    protected $url = 'https://yunpian.com/v2/sms/single_send.json';
+    protected $url = 'https://yunpian.com/v2/sms/tpl_single_send.json';
 
     /**
      * NexmoProvider constructor.
@@ -65,19 +65,24 @@ class YunpianProvider extends Sms implements DriverContract
      *
      * @param array $to
      * @param string $message
-     * @return $this
+     * @param array $additionalFormData
+     * @return $this|mixed
      */
-    public function setFormData(array $to, string $message)
+    public function setFormData(array $to, string $message, array $additionalFormData = [])
     {
         $data = [
             'form_params' => [
                 'apikey' => $this->apiKey,
                 'uid' => config('services.yunpian.from'),
-                'mobile' => $to[0],
-                'text' => $message,
+                'mobile' => $this->addPlusPrefix($to[0]),
             ]
         ];
 
+        if (!empty($additionalFormData)) {
+            $data['form_params'] = array_merge($data['form_params'], $additionalFormData);
+        }
+
+//        dd($data);
         $this->setAdditionalHeaders($data);
 
         return $this;
