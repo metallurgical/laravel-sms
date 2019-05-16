@@ -91,7 +91,7 @@ class SmsUserAfterRegister implements SmsContract
 {
     use HasSms;
 
-    public $driver = 'twillio'; // if not supply this property, code will automatically take default SMS driver, in this case is `nexmo`. 
+    public $driver = 'twilio'; // if not supply this property, code will automatically take default SMS driver, in this case is `nexmo`. 
 
     public function handle()
     {
