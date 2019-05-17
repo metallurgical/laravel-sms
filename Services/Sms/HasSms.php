@@ -92,6 +92,13 @@ trait HasSms
     public $instance;
 
     /**
+     * Switch enable for each of providers.
+     *
+     * @var
+     */
+    public $enableSwitching;
+
+    /**
      * Populate recipient's phone numbers.
      *
      * @param mixed ...$phones

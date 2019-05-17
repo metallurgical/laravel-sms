@@ -27,9 +27,10 @@ class YunpianProvider extends Sms implements DriverContract
      * @param string $apiKey
      * @param string $apiSecret
      */
-    public function __construct(string $apiKey)
+    public function __construct(string $apiKey, bool $enableSwitching)
     {
         $this->apiKey = $apiKey;
+        $this->enableSwitching = $enableSwitching;
 
         $this
             ->setBaseURL()
@@ -82,7 +83,6 @@ class YunpianProvider extends Sms implements DriverContract
             $data['form_params'] = array_merge($data['form_params'], $additionalFormData);
         }
 
-//        dd($data);
         $this->setAdditionalHeaders($data);
 
         return $this;

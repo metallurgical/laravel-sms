@@ -34,10 +34,11 @@ class NexmoProvider extends Sms implements DriverContract
      * @param string $apiKey
      * @param string $apiSecret
      */
-    public function __construct(string $apiKey, string $apiSecret)
+    public function __construct(string $apiKey, string $apiSecret, bool $enableSwitching)
     {
         $this->apiKey = $apiKey;
         $this->apiSecret = $apiSecret;
+        $this->enableSwitching = $enableSwitching;
 
         $this
             ->setBaseURL()
@@ -75,7 +76,7 @@ class NexmoProvider extends Sms implements DriverContract
      * @param string $message
      * @return $this
      */
-    public function setFormData(array $to, string $message)
+    public function setFormData(array $to, string $message, array $additionalFormData = [])
     {
         $data = [
             'form_params' => [

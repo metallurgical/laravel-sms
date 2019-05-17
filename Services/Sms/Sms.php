@@ -110,17 +110,27 @@ class Sms
             $driverName = $this->implementedClass->driver;
             $this->instance = $this->resolveProvider($driverName);
 
-            $this->currentIterateProvider = $driverName;
+            $this->setCurrentIterateProvider($driverName);
         } else {
             $this->instance = app($this->defaultProvider);
 
-            $this->currentIterateProvider = $this->defaultProvider;
+            $this->setCurrentIterateProvider($this->defaultProvider);
         }
 
         $this->instance->switchProvider = $this->switchProvider;
         $this->instance->currentIterateProvider = $this->currentIterateProvider;
 
         return $this->callConcreteHandler();
+    }
+
+    /**
+     * Set current iterate provider to SMS context.
+     *
+     * @param string $driver
+     */
+    private function setCurrentIterateProvider(string $driver)
+    {
+        $this->currentIterateProvider = $driver;
     }
 
     /**
@@ -192,7 +202,7 @@ class Sms
     private function callHTTPRequest()
     {
         // Add in current iterated driver.
-        $this->queuedProviders[] = $this->currentIterateProvider;
+        $this->addDriverToQueueProvider();
 
         $sms = collect([
             'to' => $this->getImplementedClass()->to,
@@ -248,14 +258,110 @@ class Sms
     public function shouldSwitchInvokeOtherProvider()
     {
         if ($this->shouldContinue) {
-            if ($this->ifAbleToContinueTheQueue()) {
-                $nextDriver = array_diff($this->providers, $this->queuedProviders);
-
-                $this->implementedClass->driver = $nextDriver[0];
-
-                $this->send($this->implementedClass, true);
+            if (!$this->isAbleToContinueTheQueue()) {
+                return false;
             }
+
+            $nextDriver = $this->takeNextDriver();
+
+            $this->setProviderDriver($nextDriver[0]);
+
+            // Send if qualify to switch only.
+            if ($this->isQualifiedToSwitch($nextDriver[0])) {
+                return $this->send($this->getImplementedClass(), true);
+            }
+
+            // If not qualified, attempt to find the next driver and skip current driver.
+            // Send along the current driver.
+            return $this->getNextQualifiedDriverToPerformSwitching($nextDriver[0]);
         }
+
+        return false;
+    }
+
+    /**
+     * Take the driver that still not in queue.
+     *
+     * @return array
+     */
+    private function takeNextDriver() : array
+    {
+        $nextDriver = array_values(array_diff($this->providers, $this->queuedProviders));
+
+        return $nextDriver;
+    }
+
+    /**
+     * Check whether the driver is qualified to queue.
+     *
+     * @param string $driver
+     * @return bool
+     */
+    private function isQualifiedToSwitch(string $driver) : bool
+    {
+        if (!app($driver)->enableSwitching) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Overwrite implemented class's SMS driver.
+     *
+     * @param string $driver
+     */
+    private function setProviderDriver(string $driver)
+    {
+        $this->implementedClass->driver = $driver;
+    }
+
+    /**
+     * Add current iterated driver to driver queue array for later use.
+     */
+    private function addDriverToQueueProvider()
+    {
+        $this->queuedProviders[] = $this->currentIterateProvider;
+    }
+
+    /**
+     * Get next driver that qualified to do the switching. SKIP previously set driver.
+     *
+     * @param string $driver
+     * @return bool|mixed
+     */
+    private function getNextQualifiedDriverToPerformSwitching(string $driver)
+    {
+        // Set iterate skipped driver onto SMS context.
+        $this->setCurrentIterateProvider($driver);
+
+        // Add into done queue array.
+        $this->addDriverToQueueProvider();
+
+        // Skip previously assigned driver and take next driver instead.
+        $nextDriver = $this->takeNextDriver();
+
+        // No more driver existed, then no more operation.
+        if (empty($nextDriver)) {
+            return false;
+        }
+
+        // Discard operation since all the drivers all were tested.
+        if (!$this->isAbleToContinueTheQueue()) {
+            return false;
+        }
+
+        // Overwrite existing chosen driver.
+        $this->setProviderDriver($nextDriver[0]);
+
+        // Get instance of driver for on the fly checking whether can do context switching or not.
+        // If can do, then proceed with this provider.
+        if (app($nextDriver[0])->enableSwitching) {
+            return $this->send($this->getImplementedClass(), true);
+        }
+
+        // Recursive searching for the next available drivers.
+        return $this->getNextQualifiedDriverToPerformSwitching($nextDriver[0]);
     }
 
     /**
@@ -263,7 +369,7 @@ class Sms
      *
      * @return bool
      */
-    private function ifAbleToContinueTheQueue() : bool
+    private function isAbleToContinueTheQueue() : bool
     {
         if (count($this->queuedProviders) >= $this->providers) {
             return false;

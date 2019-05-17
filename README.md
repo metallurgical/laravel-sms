@@ -46,18 +46,21 @@ Since all the sms providers have their own credentials, this service store those
 'nexmo' => [
     'api_key' => env('NEXMO_API_KEY'),
     'api_secret' => env('NEXMO_API_SECRET'),
-    'from' => env('NEXMO_FROM_NUMBER')
+    'from' => env('NEXMO_FROM_NUMBER'),
+    'switch' => env('NEXMO_ENABLE_SWITCHING', 0)
 ],
 
 'twilio' => [
     'account_sid' => env('TWILIO_ACCOUNT_SID'),
     'auth_token' => env('TWILIO_AUTH_TOKEN'),
-    'from' => env('TWILIO_FROM_NUMBER')
+    'from' => env('TWILIO_FROM_NUMBER'),
+    'switch' => env('TWILIO_ENABLE_SWITCHING', 0)
 ],
 
 'yunpian' => [
     'api_key' => env('YUNPIAN_API_KEY'),
-    'from' => env('YUNPIAN_FROM_NUMBER')
+    'from' => env('YUNPIAN_FROM_NUMBER'),
+    'switch' => env('YUNPIAN_ENABLE_SWITCHING', 0)
 ],
 ``` 
 
@@ -67,13 +70,16 @@ After putting all the snippet above, put following environment variables into `.
 NEXMO_API_KEY=<nexmo-api-key>
 NEXMO_API_SECRET=<nexmo-api-secret>
 NEXMO_FROM_NUMBER=<nexmo-from-number>
+NEXMO_ENABLE_SWITCHING=1
 
 TWILIO_ACCOUNT_SID=<twilio-account-sid>
 TWILIO_AUTH_TOKEN=<twilio-auth-token>
 TWILIO_FROM_NUMBER=<twilio-from-number>
+TWILIO_ENABLE_SWITCHING=1
 
 YUNPIAN_API_KEY=<yunpian-api-key>
 YUNPIAN_FROM_NUMBER=<yunpian-from-number>
+YUNPIAN_ENABLE_SWITCHING=1
 ```
 
 ## Usage
@@ -96,9 +102,11 @@ class SmsUserAfterRegister implements SmsContract
     public function handle()
     {
         $this
-            ->to('60169344497')
-            ->signature('[COMPANY NAME]') // International country require signature 
-            ->message('Thanks for register our application.');
+            ->to('60169344497') // No plus(+) symbol needed
+            ->signature('[COMPANY NAME]') // International country require signature except yunpian
+            ->template_id('123456') // For yunpian only
+            ->template_value(['key' => rand(1000, 5000)]) // For yunpian only
+            ->message('Thanks for register our application.'); // Except yunpian
     }
 
     public function error($exception, $HTTPResponseBody)
@@ -139,12 +147,20 @@ class RegisterController extends Controller
 
 ## Uniqueness
 
-This service has its own advantage over existing implementation. The purpose of this creation is because to handle user experience in more convenient way by enabling `shouldSwitch` driver in case one is failing. Service will try to re-send an sms to user if 1st attempt was not successful by using different drivers(switching) until all of the drivers are tested. Sounds great, right? 
+This service has its own advantage over existing implementation. The purpose of this creation is because to handle user experience in more convenient way by enabling `shouldSwitch` driver in case one driver is failed sending sms. Service will try to re-send sms to recipient if 1st attempt was not successful by using different drivers(switching) until all of the drivers are tested. Sounds great, right? 
 
 To enable switching, pass in `boolean` value as following:
 
 ```php
 Sms::send(new SmsUserAfterRegister(), true); // default to false
+```
+
+To exclude provider from participate in `Switching Mode`, set environment variable to false, like following:
+
+```
+NEXMO_ENABLE_SWITCHING=0
+TWILIO_ENABLE_SWITCHING=0
+YUNPIAN_ENABLE_SWITCHING=0
 ```
 
 ## Events

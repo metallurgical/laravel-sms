@@ -34,10 +34,11 @@ class TwilioProvider extends Sms implements DriverContract
      * @param string $accountSid
      * @param string $authToken
      */
-    public function __construct(string $accountSid, string $authToken)
+    public function __construct(string $accountSid, string $authToken, bool $enableSwitching)
     {
         $this->accountSid = $accountSid;
         $this->autToken = $authToken;
+        $this->enableSwitching = $enableSwitching;
 
         $this
             ->setBaseURL()
@@ -79,7 +80,7 @@ class TwilioProvider extends Sms implements DriverContract
      * @param string $message
      * @return $this
      */
-    public function setFormData(array $to, string $message)
+    public function setFormData(array $to, string $message, array $additionalFormData = [])
     {
         $data = [
             'form_params' => [

@@ -23,19 +23,24 @@ class SmsServiceProvider extends ServiceProvider
         app()->singleton('nexmo', function () {
             return new NexmoProvider(
                 config('services.nexmo.api_key'),
-                config('services.nexmo.api_secret')
+                config('services.nexmo.api_secret'),
+                config('services.nexmo.switch')
             );
         });
 
         app()->singleton('twilio', function () {
             return new TwilioProvider(
                 config('services.twilio.account_sid'),
-                config('services.twilio.auth_token')
+                config('services.twilio.auth_token'),
+                config('services.twilio.switch')
             );
         });
 
         app()->singleton('yunpian', function () {
-            return new YunpianProvider(config('services.yunpian.api_key'));
+            return new YunpianProvider(
+                config('services.yunpian.api_key'),
+                config('services.yunpian.switch')
+            );
         });
     }
 
