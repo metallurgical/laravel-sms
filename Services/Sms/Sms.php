@@ -311,7 +311,7 @@ class Sms
      *
      * @param string $driver
      */
-    private function setProviderDriver(string $driver)
+    private function setProviderDriver(string $driver) : void
     {
         $this->implementedClass->driver = $driver;
     }
@@ -319,7 +319,7 @@ class Sms
     /**
      * Add current iterated driver to driver queue array for later use.
      */
-    private function addDriverToQueueProvider()
+    private function addDriverToQueueProvider() : void
     {
         $this->queuedProviders[] = $this->currentIterateProvider;
     }
