@@ -2,9 +2,6 @@
 
 namespace App\Services\Sms;
 
-use App\Services\Sms\Drivers\NexmoProvider;
-use App\Services\Sms\Drivers\TwilioProvider;
-use App\Services\Sms\Drivers\YunpianProvider;
 use Illuminate\Support\ServiceProvider;
 
 class SmsServiceProvider extends ServiceProvider
@@ -21,7 +18,7 @@ class SmsServiceProvider extends ServiceProvider
         });
 
         app()->singleton('nexmo', function () {
-            return new NexmoProvider(
+            return new \App\Services\Sms\Drivers\NexmoProvider(
                 config('services.nexmo.api_key'),
                 config('services.nexmo.api_secret'),
                 config('services.nexmo.switch')
@@ -29,7 +26,7 @@ class SmsServiceProvider extends ServiceProvider
         });
 
         app()->singleton('twilio', function () {
-            return new TwilioProvider(
+            return new \App\Services\Sms\Drivers\TwilioProvider(
                 config('services.twilio.account_sid'),
                 config('services.twilio.auth_token'),
                 config('services.twilio.switch')
@@ -37,7 +34,7 @@ class SmsServiceProvider extends ServiceProvider
         });
 
         app()->singleton('yunpian', function () {
-            return new YunpianProvider(
+            return new \App\Services\Sms\Drivers\YunpianProvider(
                 config('services.yunpian.api_key'),
                 config('services.yunpian.switch')
             );
