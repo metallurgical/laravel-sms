@@ -62,6 +62,13 @@ Since all the sms providers have their own credentials, this service store those
     'from' => env('YUNPIAN_FROM_NUMBER'),
     'switch' => env('YUNPIAN_ENABLE_SWITCHING', 0)
 ],
+
+'isms' => [
+    'username' => env('ISMS_USERNAME'),
+    'password' => env('ISMS_PASSWORD'),
+    'user_id' => env('ISMS_USER_ID'),
+    'switch' => env('ISMS_ENABLE_SWITCHING', 0)
+],
 ``` 
 
 After putting all the snippet above, put following environment variables into `.env` file:
@@ -80,6 +87,11 @@ TWILIO_ENABLE_SWITCHING=1
 YUNPIAN_API_KEY=<yunpian-api-key>
 YUNPIAN_FROM_NUMBER=<yunpian-from-number>
 YUNPIAN_ENABLE_SWITCHING=1
+
+ISMS_USERNAME=<isms-username>
+ISMS_PASSWORD=<isms-password>
+ISMS_USER_ID=<isms-user-id>
+ISMS_ENABLE_SWITCHING=1
 ```
 
 ## Usage
@@ -295,4 +307,3 @@ public function handle()
 ```
 
 `message()` and `signature()` options does not require for **yunpian** provider, but did require for others provider to works
-
