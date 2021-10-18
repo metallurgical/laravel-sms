@@ -39,6 +39,15 @@ class SmsServiceProvider extends ServiceProvider
                 config('services.yunpian.switch')
             );
         });
+
+        app()->singleton('isms', function () {
+            return new \App\Services\Sms\Drivers\ISmsProvider(
+                config('services.isms.username'),
+                config('services.isms.password'),
+                config('services.isms.send_id'),
+                config('services.isms.switch')
+            );
+        });
     }
 
     /**
